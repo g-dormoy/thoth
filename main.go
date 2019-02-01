@@ -1,7 +1,7 @@
 package main
 
-import "github.com/g-dormoy/thoth/cmd"
+import "github.com/g-dormoy/thoth/cli"
 
 func main() {
-	cmd.Execute()
+	cli.Execute()
 }
