@@ -2,20 +2,12 @@ package server
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"strconv"
 	"strings"
 )
-
-func execute(cmd Command) error {
-	switch cmd.cmd {
-	case "PRODUCE":
-		fmt.Printf("%+v", cmd.event)
-	}
-	return nil
-}
 
 func handleConnection(c net.Conn) error {
 	defer c.Close()
@@ -23,17 +15,30 @@ func handleConnection(c net.Conn) error {
 
 	for sc.Scan() {
 		entry := strings.SplitN(sc.Text(), " ", 2)
-		event := Event{}
-		json.Unmarshal([]byte(entry[1]), &event)
-		execute(Command{entry[0], event})
+		fmt.Printf("CMD NOT FOUND : %+v", entry)
 	}
 
 	return sc.Err()
 }
 
+// Bootstrap loads all the partitions into the memory
+func Bootstrap(path string) error {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		if true == strings.Contains(file.Name(), "_partition") {
+		}
+	}
+
+	return nil
+}
+
 // Run is the entrypoint of a Thoth Server
-func Run(port uint) error {
-	ln, err := net.Listen("tcp", ":"+strconv.Itoa(int(port)))
+func Run(conf *Conf) error {
+	ln, err := net.Listen("tcp", ":"+strconv.Itoa(int(conf.port)))
 	if err != nil {
 		return err
 	}
