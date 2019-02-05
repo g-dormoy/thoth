@@ -17,10 +17,34 @@ func TestNewConf(t *testing.T) {
 func TestSetPort(t *testing.T) {
 	conf := Conf{}
 
-	ln, err := net.Listen("tcp", ":4242")
+	ln, _ := net.Listen("tcp", ":4242")
 	assert.NotNil(t, conf.SetPort(uint(4242)))
 
-	if err != nil {
-		ln.Close()
+	ln.Close()
+
+	assert.Nil(t, conf.SetPort(uint(4242)))
+}
+
+func TestPort(t *testing.T) {
+	conf := Conf{
+		port: uint(4242),
 	}
+
+	assert.Equal(t, conf.port, uint(4242), "they should be Equal")
+}
+
+func TestSetStorage(t *testing.T) {
+	conf := Conf{}
+
+	assert.Nil(t, conf.SetStorageDir("/tmp"))
+
+	assert.NotNil(t, conf.SetStorageDir("/idontexistsorry"))
+}
+
+func TestStorageDir(t *testing.T) {
+	conf := Conf{
+		storageDir: "test",
+	}
+
+	assert.Equal(t, conf.StorageDir(), "test", "they should be equal")
 }

@@ -38,15 +38,16 @@ func (c *Conf) SetPort(p uint) error {
 // SetStorageDir set the storage directory
 func (c *Conf) SetStorageDir(path string) error {
 	f, err := os.Stat(path)
-	if err != nil {
-		return err
-	}
-
-	if true == f.IsDir() {
+	if nil != err || false == f.IsDir() {
 		return fmt.Errorf("%s is not a directory", path)
 	}
 
 	c.storageDir = path
 
 	return nil
+}
+
+// StorageDir return the path of the storage directory
+func (c *Conf) StorageDir() string {
+	return c.storageDir
 }
