@@ -1,7 +1,7 @@
 package main
 
-import "github.com/g-dormoy/thoth/cli"
+import "fmt"
 
 func main() {
-	cli.Execute()
+	fmt.Printf("Nothing to see here!")
 }
