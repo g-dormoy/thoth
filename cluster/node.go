@@ -15,9 +15,8 @@ type Nodable interface {
 // Nodes are either alive or dead and its state is represented by the isAlive boolean
 type Node struct {
 	conn    net.Conn
-	Netwk   string
-	Addr    string
 	isAlive bool
+	Addr
 }
 
 // NewNode create a Node struct
@@ -25,8 +24,10 @@ type Node struct {
 // With the net.Addr interface we can make sur a Network and a address is given
 func NewNode(addr net.Addr) Node {
 	return Node{
-		Netwk: addr.Network(),
-		Addr:  addr.String(),
+		Addr: Addr{
+			netwk: addr.Network(),
+			addr:  addr.String(),
+		},
 	}
 }
 
@@ -45,14 +46,4 @@ func (n *Node) Connect() error {
 
 	n.conn = conn
 	return nil
-}
-
-// String return the adress of the node
-func (n Node) String() string {
-	return n.Addr
-}
-
-// Network return the network on which the Node is working
-func (n Node) Network() string {
-	return n.Netwk
 }
