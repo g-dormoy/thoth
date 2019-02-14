@@ -4,10 +4,43 @@ import (
 	"net"
 )
 
+// NodeIterator is an interface to iter through nodes
+type NodeIterator interface {
+	Iter() <-chan Node
+	Append(Node) Nodes
+	Nodes() Nodes
+}
+
+// Nodes return a copy of the Node slice
+func (n Nodes) Nodes() Nodes {
+	return n
+}
+
+// Iter Iterates through an Node slice
+func (n Nodes) Iter() <-chan Node {
+	c := make(chan Node)
+	go func() {
+		for _, node := range n {
+			c <- node
+		}
+		close(c)
+	}()
+	return c
+}
+
+// Append a node into the Nodes slice
+func (n Nodes) Append(node Node) Nodes {
+	return append(n, node.Node())
+}
+
+// Nodes is a slice of Node, it implements a NodeIterator interface
+type Nodes []Node
+
 // Nodable interface defines the API for Clusterable structs
 type Nodable interface {
 	net.Addr
 	Connect() error
+	Node() Node
 }
 
 // Node implement the Nodable struct, it stores a net.Conn interface
@@ -46,4 +79,9 @@ func (n *Node) Connect() error {
 
 	n.conn = conn
 	return nil
+}
+
+// Node returns the node
+func (n Node) Node() Node {
+	return n
 }

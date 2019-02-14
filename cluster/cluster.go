@@ -7,15 +7,28 @@ type Clusterable interface {
 
 // Cluster is a Clusterable struct
 type Cluster struct {
-	Nodes []Nodable
+	Nodes  NodeIterator
+	Server Servable
 }
 
 // AddNode add a node to the cluster
 func (c *Cluster) AddNode(n Nodable) {
-	for _, node := range c.Nodes {
+	if c.Nodes == nil {
+		c.Nodes = make(Nodes, 0)
+	}
+
+	for node := range c.Nodes.Iter() {
 		if node.String() == n.String() && node.Network() == n.Network() {
 			return
 		}
 	}
-	c.Nodes = append(c.Nodes, n)
+	c.Nodes = c.Nodes.Append(n.Node())
+}
+
+// New return a new instance of a cluster stuct
+func New(s Servable, n NodeIterator) Cluster {
+	return Cluster{
+		Nodes:  n,
+		Server: s,
+	}
 }
