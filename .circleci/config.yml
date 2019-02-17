@@ -35,9 +35,12 @@ jobs:
     <<: *tests
 
   auto_merge:
+    working_directory: /go/src/github.com/g-dormoy/thot
     docker:
       - image: circleci/node:latest
     steps:
+      - checkout
+
       # Should make a new image
       - run: npm install -g circleci-automerge
 
@@ -50,7 +53,7 @@ workflows:
       - test_1.11
       - test_1.12beta2
       - auto_merge:
-        - requires:
-          - test_1.11
-          - test_1.12beta2
+          requires:
+            - test_1.11
+            - test_1.12beta2
 
