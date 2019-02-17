@@ -41,9 +41,9 @@ jobs:
       - checkout
 
       # Should make a new image
-      - run: npm install -g circleci-automerge
+      - run: npm i circleci-automerge
 
-      - run: circleci-automerge
+      - run: npx circleci-automerge
 
 workflows:
   version: 2
