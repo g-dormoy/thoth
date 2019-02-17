@@ -63,7 +63,7 @@ jobs:
           name: build the app with go 1.11
           command: go test ./... -cover
 
-  test_with_ref: # cover the app
+  test_ref: # cover the app
     docker:
       - image: circleci/golang:1.11
     <<: *tests
@@ -73,4 +73,5 @@ workflows:
   tests_jobs:
     jobs:
       - test_1.11
-      - test_1.12beta
+      - test_1.12beta2
+      - test_ref
