@@ -16,7 +16,7 @@ _test: &tests
     - run: go get -u github.com/spf13/cobra/cobra
 
     # Check go version
-    - run: go --version
+    - run: go version
 
     # Build the app
     - run: 
