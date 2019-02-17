@@ -34,9 +34,23 @@ jobs:
       - image: circleci/golang:1.12beta2
     <<: *tests
 
+  auto_merge:
+    docker:
+      - image: circleci/node:latest
+    steps:
+      # Should make a new image
+      - run: npm install -g circleci-automerge
+
+      - run: circleci-automerge
+
 workflows:
   version: 2
   tests_jobs:
     jobs:
       - test_1.11
       - test_1.12beta2
+      - auto_merge:
+        - requires:
+          - test_1.11
+          - test_1.12beta2
+
