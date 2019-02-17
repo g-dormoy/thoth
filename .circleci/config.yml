@@ -35,7 +35,6 @@ jobs:
     <<: *tests
 
   auto_merge:
-    working_directory: /go/src/github.com/g-dormoy/thot
     docker:
       - image: circleci/node:latest
     steps:
