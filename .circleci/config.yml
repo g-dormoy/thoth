@@ -2,7 +2,7 @@ version: 2
 jobs:
   test_1.11: # cover the app
     docker:
-      - images: circleci/golang:1.11
+      - image: circleci/golang:1.11
     working_directory: /go/src/github.com/g-dormoy/thot
     steps:
       - checkout
@@ -25,7 +25,7 @@ jobs:
   
   test_1.12beta2: # cover the app
     docker:
-      - images: circleci/golang:1.12beta2
+      - image: circleci/golang:1.12beta2
     working_directory: /go/src/github.com/g-dormoy/thot
     steps:
       - checkout
