@@ -1,0 +1,43 @@
+version: 2
+
+# Base template for tests jobs
+_test: &tests
+  working_directory: /go/src/github.com/g-dormoy/thot
+  steps:
+    - checkout
+
+    - restore_cache: # restores saved cache if no changes are detected since last run
+    # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+        keys:
+          - v1-pkg-cache
+    
+    # Better build an img with all the dependencies
+    - run: go get -u github.com/stretchr/testify
+    - run: go get -u github.com/spf13/cobra/cobra
+
+    # Check go version
+    - run: go version
+
+    # Build the app
+    - run: 
+        name: Test the app with coverage
+        command: go test ./... -cover
+
+jobs:
+  test_1.11: # cover the app
+    docker:
+      - image: circleci/golang:1.11
+    <<: *tests
+  
+  test_1.12beta2: # cover the app
+    docker:
+      - image: circleci/golang:1.12beta2
+    <<: *tests
+
+workflows:
+  version: 2
+  tests_jobs:
+    jobs:
+      - test_1.11
+      - test_1.12beta2
+
