@@ -2,7 +2,7 @@ version: 2
 
 # Base template for tests jobs
 _test: &tests
-  working_directory: /go/src/github.com/g-dormoy/thot
+  working_directory: /go/src/github.com/g-dormoy/thoth
   steps:
     - checkout
 
