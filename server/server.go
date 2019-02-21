@@ -1,9 +1,6 @@
 package server
 
-import (
-	"errors"
-	"net"
-)
+import "net"
 
 // Serv is a struct defining a thoth server
 type Serv struct {
@@ -12,19 +9,19 @@ type Serv struct {
 	// Netwk is the type on connection the server use
 	// It can be anything based on network handle by the listener
 	Netwk string
-	// listenerFactory is a getter that returns a net.Listener
-	listenerFactory func(string, string) (net.Listener, error)
 }
 
 // New return a thoth server instance
 // If no listener factory is given it returns an error
-func New(netwk, port string, factory func(string, string) (net.Listener, error)) (*Serv, error) {
-	if factory == nil {
-		return nil, errors.New("listenerFactory can not be nil")
+func New(netwk, port string) Serv {
+	return Serv{
+		Port:  port,
+		Netwk: netwk,
 	}
-	return &Serv{
-		Port:            port,
-		Netwk:           netwk,
-		listenerFactory: net.Listen,
-	}, nil
+}
+
+// Listen is a net.Listener factoryDecorator
+// It return a listener based on the factory given as an arg
+func (s Serv) Listen(f func(string, string) (net.Listener, error)) (net.Listener, error) {
+	return f(s.Netwk, ":"+s.Port)
 }
