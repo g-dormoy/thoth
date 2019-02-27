@@ -1,27 +1,43 @@
 package server
 
-import "net"
+import (
+	"bufio"
+	"net"
+)
 
-// Serv is a struct defining a thoth server
-type Serv struct {
-	// Port is the port on which the server should listen
-	Port string
-	// Netwk is the type on connection the server use
-	// It can be anything based on network handle by the listener
-	Netwk string
-}
+// ConnectionHandler are functions used to handle connections queries
+type ConnectionHandler func(net.Conn)
 
-// New return a thoth server instance
-// If no listener factory is given it returns an error
-func New(netwk, port string) Serv {
-	return Serv{
-		Port:  port,
-		Netwk: netwk,
+// ListenerFactory defines a factory to build new net.Listener
+// It could be nothing more then net.Listen()
+type ListenerFactory func(string, string) (net.Listener, error)
+
+type ThothResponse string
+type ThothRequest string
+
+// HandleConn offers a defauilt connection handler for the thoth server
+func HandleConn(c net.Conn) {
+	sc := bufio.NewScanner(c)
+
+	for sc.Scan() {
+		resp := DispatchCmd(sc.Text())
+		c.Write([]byte(resp))
 	}
 }
 
-// Listen is a net.Listener factoryDecorator
-// It return a listener based on the factory given as an arg
-func (s Serv) Listen(f func(string, string) (net.Listener, error)) (net.Listener, error) {
-	return f(s.Netwk, ":"+s.Port)
+// Starts a new Thoth server with its own ConnectionHandler
+func Start(f ListenerFactory, ch ConnectionHandler, ntwk, path string) error {
+	ln, err := f(ntwk, path)
+	if err != nil {
+		return err
+	}
+
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			// I BETTER DO SOMETHING HERE
+		}
+
+		go ch(conn)
+	}
 }

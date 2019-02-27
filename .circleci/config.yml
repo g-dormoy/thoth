@@ -29,9 +29,9 @@ jobs:
       - image: circleci/golang:1.11
     <<: *tests
   
-  test_1.12beta2: # cover the app
+  test_1.12: # cover the app
     docker:
-      - image: circleci/golang:1.12beta2
+      - image: circleci/golang:1.12
     <<: *tests
 
 workflows:
@@ -39,5 +39,5 @@ workflows:
   tests_jobs:
     jobs:
       - test_1.11
-      - test_1.12beta2
+      - test_1.12
 
