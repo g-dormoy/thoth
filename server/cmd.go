@@ -2,29 +2,52 @@ package server
 
 import (
 	"fmt"
-	"strings"
 )
 
-type CommandHandler func(ThothRequest) ThothResponse
+type CommandHandler func(IRequest) Response
 
-// SayHi is a simple command to say hi :D
-func SayHi(cmd string) ThothResponse {
-	return "Ho hello there!"
+// ICommandDispatcher defines and interface to add and manage command in a thot server
+type ICommandDispatcher interface {
+	Add(string, CommandHandler) error
+	Dispatch(IRequest) Response
 }
 
-// DispatchCmd parse the thotRequest and send it to the write CommandHandler
-// DispatchCmd should be a CommandHandler itself
-func DispatchCmd(query string) ThothResponse {
-	var resp ThothResponse
-	command := strings.SplitN(query, " ", 1)
-	if command == nil {
-		return "no command found"
+// CommandDispatcher implements ICommandDispatcher
+type CommandDispatcher struct {
+	cmd map[string]CommandHandler
+}
+
+// NewCommandDispatcher is CommandDispatcher factory
+func NewCommandDispatcher() CommandDispatcher {
+	return CommandDispatcher{
+		cmd: make(map[string]CommandHandler),
 	}
-	switch cmd := command[0]; cmd {
-	case "hi":
-		resp = SayHi("")
-	default:
-		resp = ThothResponse(fmt.Sprintf("command '%s' not found", cmd))
+}
+
+// Add a new cmd handler to the Dispatcher
+// Return an error if command already exist
+func (cd CommandDispatcher) Add(cmd string, handler CommandHandler) error {
+	if _, ok := cd.cmd[cmd]; ok {
+		return fmt.Errorf("command %s already exist", cmd)
 	}
-	return resp
+	cd.cmd[cmd] = handler
+	return nil
+}
+
+// Dispatch parse the Request and send it to the write CommandHandler
+func (cd CommandDispatcher) Dispatch(req IRequest) Response {
+	if _, ok := cd.cmd[req.Command()]; false == ok {
+		return Response{
+			Err:  fmt.Errorf("%s command not found", req.Command()),
+			ErrT: ERROR_STATUS_COMMAND_NOT_FOUND,
+		}
+	}
+	return cd.cmd[req.Command()](req)
+}
+
+// SayHi is a simple command to say hi :D
+func SayHi(cmd IRequest) Response {
+	return Response{
+		Pl: "Ho hello there!",
+	}
 }
