@@ -3,20 +3,23 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"sync"
 )
 
 // ServiceCollection represent a collection for Services
-type ServiceCollection []Service
+type ServiceCollection struct {
+	Services []Service
+}
 
 // Filter return a new collection based of the filtering function result
-func (sc ServiceCollection) Filter(ff func(Service) bool) []Service {
-	var nsc []Service
+func (sc ServiceCollection) Filter(ff func(Service) bool) ServiceCollection {
+	nsc := ServiceCollection{}
 
-	for _, service := range sc {
+	for _, service := range sc.Services {
 		if ff(service) == true {
-			nsc = append(nsc, service)
+			nsc.Services = append(nsc.Services, service)
 		}
 	}
 
@@ -33,7 +36,7 @@ type Service struct {
 }
 
 // getHandler handler http request to add new service
-func getHandler(mutex *sync.Mutex, services ServiceCollection) func(w http.ResponseWriter, r *http.Request) {
+func getHandler(mutex *sync.Mutex, sc *ServiceCollection) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// If not a PUT request, return an error
 		if r.Method != http.MethodGet {
@@ -48,13 +51,13 @@ func getHandler(mutex *sync.Mutex, services ServiceCollection) func(w http.Respo
 			w.WriteHeader(http.StatusBadRequest)
 		}
 
-		s := services.Filter(func(service Service) bool { return service.Name == name })
+		s := sc.Filter(func(service Service) bool { return service.Name == name })
 		_ = json.NewEncoder(w).Encode(s)
 	}
 }
 
 // addHandler handler http request to add new service
-func addHandler(mutex *sync.Mutex, services []Service) func(w http.ResponseWriter, r *http.Request) {
+func addHandler(mutex *sync.Mutex, sc *ServiceCollection) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// If not a PUT request, return an error
 		if r.Method != http.MethodPut {
@@ -67,19 +70,31 @@ func addHandler(mutex *sync.Mutex, services []Service) func(w http.ResponseWrite
 		service := Service{}
 		body, _ := ioutil.ReadAll(r.Body)
 		defer r.Body.Close()
-		json.Unmarshal(body, &service)
+
+		if string(body) == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		err := json.Unmarshal(body, &service)
+		if err != nil {
+			// TO-DO handle logging better
+			log.Printf("%s", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 
 		// Add the newly created service to the services collection
 		mutex.Lock()
-		services = append(services, service)
+		sc.Services = append(sc.Services, service)
 		mutex.Unlock()
 
 		w.WriteHeader(http.StatusCreated)
+		return
 	}
 }
 
 func main() {
-	var services []Service
+	services := &ServiceCollection{}
 	mutex := &sync.Mutex{}
 	http.HandleFunc("/add", addHandler(mutex, services))
 	http.HandleFunc("/get", getHandler(mutex, services))
