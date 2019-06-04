@@ -29,6 +29,7 @@ func addHandlerFunc(m *sync.Mutex, sc *ServiceCollection) http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+
 		err := json.Unmarshal(body, &service)
 		if err != nil {
 			// TO-DO handle logging better
@@ -36,6 +37,11 @@ func addHandlerFunc(m *sync.Mutex, sc *ServiceCollection) http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+		if err = service.Validate(); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 		// Add the newly created service to the services collection
 		m.Lock()
 		sc.Services = append(sc.Services, service)
